@@ -2197,37 +2197,104 @@ body{
 }
 
 
-/* === Patch v5: header alignment + modal overlay + touch dropdowns === */
-@media (max-width: 768px){
-  /* Keep header actions pinned right on small screens */
-  .header-content{ flex-wrap: nowrap !important; }
-  .logo{ min-width: 0; flex: 1 1 auto; }
-  .logo h1{ white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .header-actions{ flex: 0 0 auto; margin-left: auto; }
+/* === Patch v6: Practice compact layout + compact sticky bars === */
+
+/* Practice: reduce empty space around settings card */
+.practice-page .practice-settings {
+  padding: 16px !important;
+  margin-bottom: 14px !important;
 }
 
-/* Hide sticky level bars when a modal is open (prevents overlap) */
-body.modal-open .level-section--sticky{ visibility: hidden; }
-
-/* Ensure modals are always above sticky header/levels */
-.modal{ z-index: 1300; }
-.modal__backdrop{ z-index: 1300; }
-.modal__panel{ z-index: 1301; }
-
-/* Level dropdown: hover on desktop + open class on touch */
-.level-btn:hover .level-dropdown{ display:block; }
-.level-btn.open .level-dropdown{ display:block; }
-
-
-/* Practice: keep score + streak on one row on mobile */
-@media (max-width: 768px){
-  .score-container{
-    display:flex;
-    flex-direction:row;
-    justify-content:space-between;
-    gap:12px;
-    flex-wrap:nowrap;
+/* Practice: keep selects on one row on mobile */
+@media (max-width: 600px) {
+  .practice-page .practice-settings {
+    padding: 12px !important;
   }
-  .score-item{ flex:1 1 0; }
-  .score-item.streak-item{ justify-content:flex-end; }
+
+  .practice-page .settings-row {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 12px !important;
+    margin-bottom: 12px !important;
+  }
+
+  .practice-page .setting-group label {
+    font-size: 0.85rem;
+  }
+
+  .practice-page .select-input {
+    padding: 10px 12px !important;
+  }
+
+  /* Score + streak directly below, single line */
+  .practice-page .score-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 12px 14px !important;
+    margin-top: 10px !important;
+  }
+  .practice-page .score-item {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 8px;
+    margin: 0 !important;
+  }
+}
+
+/* Sticky level bar: slightly translucent by default, fully opaque & compact on scroll */
+.level-section--sticky {
+  background: rgba(255,255,255,0.92) !important;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+body.is-scrolled .level-section--sticky {
+  background: rgba(255,255,255,0.98) !important;
+  padding: 6px 0 !important;
+  box-shadow: 0 2px 10px rgba(0,0,0,.08) !important;
+}
+
+/* Compact the level buttons when scrolled (all pages) */
+body.is-scrolled .level-btn {
+  padding: 8px 12px !important;
+  gap: 6px !important;
+}
+body.is-scrolled .level-badge {
+  font-size: 1.05rem !important;
+}
+body.is-scrolled .level-name {
+  display: none !important;
+}
+body.is-scrolled .level-count {
+  font-size: 10px !important;
+}
+
+/* Grammar: put Topics/Tags on same row as level chips (like v3) */
+#grammarTopBar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+#grammarTopBar #levelButtons {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  padding-right: 4px;
+}
+
+#grammarTopBar #grammarFilters {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  white-space: nowrap;
+}
+
+/* Keep the filter buttons compact */
+#grammarTopBar #grammarFilters .filter-btn,
+#grammarTopBar #grammarFilters button {
+  padding: 10px 12px;
 }
