@@ -1592,6 +1592,7 @@ body.zen-mode .word-card-host {
 }
 
 .drawer-link{
+  display: block;
   padding:14px 0;
   border-bottom:1px solid #f0f0f0;
   text-decoration:none;
@@ -1599,6 +1600,7 @@ body.zen-mode .word-card-host {
   letter-spacing:.08em;
   text-transform:uppercase;
   font-size:13px;
+  cursor: pointer;
 }
 
 /* ==========================
@@ -2177,3 +2179,11 @@ body{
   border-color: #e53e3e !important;
 }
 
+
+/* ===== Fix: drawer links always clickable ===== */
+.drawer-link--active {
+  font-weight: 800;
+  color: #111;
+  pointer-events: auto !important;
+  cursor: pointer !important;
+}
