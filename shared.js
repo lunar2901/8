@@ -4,16 +4,6 @@
   const SAVED_META = 'savedWordsMetaV1';
   const SEARCH_IDX = 'searchIndexV1';
 
-
-  // Add a global "is-scrolled" class for compact sticky bars (all pages)
-  function updateScrolledClass() {
-    const scrolled = (window.scrollY || document.documentElement.scrollTop || 0) > 10;
-    document.body.classList.toggle('is-scrolled', scrolled);
-  }
-  window.addEventListener('scroll', updateScrolledClass, { passive: true });
-  window.addEventListener('load', updateScrolledClass);
-
-
   function getSaved() { return new Set(JSON.parse(localStorage.getItem(SAVED_KEY) || '[]')); }
   function setSaved(s) { localStorage.setItem(SAVED_KEY, JSON.stringify([...s])); }
   function getMeta()   { return JSON.parse(localStorage.getItem(SAVED_META) || '{}'); }
@@ -30,8 +20,20 @@
     setIdx(idx);
   }
 
-  function openModal(id)  { const el = document.getElementById(id); if (el) el.hidden = false; }
-  function closeModal(id) { const el = document.getElementById(id); if (el) el.hidden = true; }
+  function openModal(id)  {
+    const el = document.getElementById(id);
+    if (el) {
+      el.hidden = false;
+      document.body.classList.add('modal-open');
+    }
+  }
+  function closeModal(id) {
+    const el = document.getElementById(id);
+    if (el) el.hidden = true;
+    // remove body flag only if no other modals are open
+    const anyOpen = Array.from(document.querySelectorAll('.modal')).some(m => !m.hidden);
+    if (!anyOpen) document.body.classList.remove('modal-open');
+  }
   document.addEventListener('click', e => { const c = e.target?.dataset?.close; if (c) closeModal(c); });
 
   function setSaveBtnState(btn, isSaved) {
@@ -141,9 +143,21 @@
             :`<a href="${esc(it.url||'#')}" style="font-size:11px;color:#aaa;white-space:nowrap;text-decoration:none;padding:3px 8px;border:1px solid #eee;border-radius:6px;">${esc((it.url||'#').replace('.html',''))}</a>`
           }
         `;
-        if (isHere && onJump) {
-          row.querySelector('.sr-word')?.addEventListener('click', () => { onJump(it); closeModal('globalSearchModal'); });
-        }
+        // Make the entire result row clickable (not just the word).
+        const go = () => {
+          if (isHere && onJump) { onJump(it); closeModal('globalSearchModal'); return; }
+          if (it.url) window.location.href = it.url;
+        };
+        row.addEventListener('click', (e) => {
+          const t = e.target;
+          if (t && (t.closest('button') || t.closest('a'))) return; // allow save button + link
+          go();
+        });
+        row.querySelector('.sr-word')?.addEventListener('click', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          go();
+        });
         cont.appendChild(row);
       });
     });

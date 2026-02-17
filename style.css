@@ -56,6 +56,9 @@
   --transition-fast: 150ms ease;
   --transition-base: 250ms ease;
   --transition-slow: 350ms ease;
+
+  /* Layout */
+  --header-height: 72px;
 }
 
 * {
@@ -2241,4 +2244,70 @@ body{
   color: #111;
   pointer-events: auto !important;
   cursor: pointer !important;
+}
+
+/* ==========================================================
+   Patch v8: header pinning, modal stacking, sticky bar UI,
+             practice compact row, grammar filters alignment
+   ========================================================== */
+
+/* Header icons pinned right on mobile (no wrapping) */
+@media (max-width: 768px){
+  .header-content{ flex-wrap: nowrap !important; }
+  .logo h1{ max-width: 60vw; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .header-actions{ margin-left:auto; flex:0 0 auto; }
+}
+
+/* Sticky level bar below header + opaque */
+.level-section--sticky{
+  top: var(--header-height) !important;
+  z-index: 2000;
+  background: rgba(255,255,255,0.82);
+  backdrop-filter: saturate(180%) blur(8px);
+  -webkit-backdrop-filter: saturate(180%) blur(8px);
+}
+body.is-compact .level-section--sticky{
+  background: rgba(255,255,255,0.95);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+}
+body.is-compact .level-btn{ padding: 6px 10px; }
+body.is-compact .level-name{ display:none !important; }
+
+/* Modals above header + levels on ALL pages */
+.modal{ z-index: 10000 !important; }
+.modal__panel{ margin-top: env(safe-area-inset-top); }
+body.modal-open{ overflow:hidden; }
+body.modal-open .level-section--sticky{ display:none !important; }
+
+/* Grammar: Topics/Tags on same row as levels */
+#grammarTopBar{ display:flex; align-items:center; gap:10px; }
+#grammarTopBar .level-buttons{
+  flex: 1 1 auto;
+  overflow-x:auto;
+  -webkit-overflow-scrolling: touch;
+  white-space: nowrap;
+}
+#grammarTopBar .grammar-filters{
+  flex: 0 0 auto;
+  display:flex;
+  gap:8px;
+  overflow: visible !important;
+}
+
+/* Practice: Level + Exercise Type on one line (mobile), score/streak one line */
+.practice-header{ display:none !important; }
+@media (max-width: 768px){
+  .practice-page .settings-row{
+    display:grid !important;
+    grid-template-columns: repeat(2, minmax(0,1fr)) !important;
+    gap: 12px !important;
+  }
+  .practice-page .setting-group{ min-width:0; }
+  .practice-page .select-input{ width:100%; min-width:0; }
+  .practice-page .score-container{
+    display:flex !important;
+    justify-content: space-between !important;
+    gap: 12px !important;
+    flex-wrap: nowrap !important;
+  }
 }

@@ -98,6 +98,7 @@
     function closeMenu(){drawer.hidden=true;backdrop.hidden=true;document.body.classList.remove('drawer-open');menuBtn?.setAttribute("aria-expanded","false");}
     menuBtn?.addEventListener("click",openMenu);closeBtn?.addEventListener("click",closeMenu);backdrop?.addEventListener("click",closeMenu);
     SharedApp.initSavedModal();
+    SharedApp.initSearchModal();
   </script>
   <script type="module" src="app.js"></script>
 </body>
