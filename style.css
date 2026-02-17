@@ -639,6 +639,26 @@ body {
   border-radius: var(--radius-lg);
 }
 
+/* Practice: compact layout on mobile (Level + Exercise Type same row) */
+@media (max-width: 640px){
+  .practice-header{ display:none !important; }
+  .practice-settings{ padding: 14px !important; margin-bottom: 14px !important; }
+  .settings-row{
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+  .setting-group{ min-width:0; }
+  .select-input{ width:100%; min-width:0; padding: 10px 12px; font-size:16px; }
+  .score-container{
+    justify-content: space-between;
+    gap: 12px;
+    padding: 10px 12px;
+    flex-wrap: nowrap;
+  }
+  .score-item{ white-space:nowrap; }
+}
+
 .score-item {
   display: flex;
   align-items: center;
@@ -1576,6 +1596,9 @@ body.zen-mode .word-card-host {
 /* Prevent background scroll when drawer is open */
 body.drawer-open{ overflow:hidden; }
 
+body.drawer-open .level-section--sticky,
+body.drawer-open #grammarTopBar{ visibility:hidden; }
+
 .drawer-top{
   display:flex;
   align-items:center;
@@ -1738,7 +1761,12 @@ body{
 }
 
 /* ===== Modals ===== */
-.modal{ position:fixed; inset:0; z-index:200; }
+.modal{ position:fixed; inset:0; z-index:2000; }
+
+/* Prevent background scroll + hide sticky bars when a modal is open */
+body.modal-open{ overflow:hidden; }
+body.modal-open .level-section--sticky,
+body.modal-open #grammarTopBar{ visibility:hidden; }
 .modal__backdrop{ position:absolute; inset:0; background:rgba(0,0,0,.35); }
 .modal__panel{
   position:relative;
@@ -2031,12 +2059,18 @@ body{
   top: 72px;
   /* Above page content, below header/drawer */
   z-index: 800;
-  background: #fff;
+  background: rgba(255,255,255,.92);
+  backdrop-filter: blur(10px);
   border-radius: 0 !important;
   box-shadow: 0 2px 12px rgba(0,0,0,.07) !important;
   padding: 10px 0 !important;
   margin-bottom: 18px !important;
   border-bottom: 1px solid rgba(0,0,0,.07);
+}
+
+body.is-compact .level-section--sticky{
+  background: rgba(255,255,255,.97);
+  padding: 6px 0 !important;
 }
 
 /* Mobile: level row no-wrap, single scrollable line */
@@ -2194,67 +2228,4 @@ body{
   color: #111;
   pointer-events: auto !important;
   cursor: pointer !important;
-}
-
-
-/* ===== Patch v9: Drawer on top + Practice compact ===== */
-
-/* Drawer should visually dominate when open */
-.drawer-backdrop{ z-index:6000 !important; background:rgba(0,0,0,.45) !important; }
-.drawer{ z-index:6001 !important; }
-
-/* Hide sticky level bar (and grammar top bar) when drawer is open */
-body.drawer-open .level-section--sticky,
-body.drawer-open #grammarTopBar{
-  visibility:hidden !important;
-}
-
-/* Modals above everything else except drawer */
-.modal{ z-index:5000 !important; }
-
-/* Make sticky level area more opaque/less distracting (all pages) */
-.level-section--sticky{
-  background: rgba(255,255,255,.92) !important;
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-}
-body.is-compact .level-section--sticky{
-  background: rgba(255,255,255,.97) !important;
-}
-
-/* Practice page: compact controls so "Check Answer" is visible without scrolling */
-@media (max-width: 600px){
-  .practice-settings{
-    padding: 12px !important;
-    margin-bottom: 12px !important;
-    border-radius: 14px !important;
-  }
-  .settings-row{
-    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-    gap: 10px !important;
-    margin-bottom: 10px !important;
-  }
-  .setting-group label{
-    font-size: 0.85rem !important;
-    margin-bottom: 2px !important;
-  }
-  .select-input{
-    padding: 10px 12px !important;
-    border-width: 1px !important;
-    border-radius: 12px !important;
-    font-size: 16px !important; /* prevent iOS zoom */
-    min-width: 0 !important;
-    width: 100% !important;
-  }
-  .score-container{
-    padding: 10px 12px !important;
-    gap: 18px !important;
-    justify-content: space-between !important;
-  }
-  .score-value{ font-size: 1.1rem !important; }
-}
-
-/* Slightly tighten practice exercise card on mobile */
-@media (max-width: 600px){
-  .exercise-card{ padding: 18px !important; }
 }

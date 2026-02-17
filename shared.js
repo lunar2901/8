@@ -20,20 +20,13 @@
     setIdx(idx);
   }
 
-  function openModal(id)  {
-    const el = document.getElementById(id);
-    if (el) {
-      el.hidden = false;
-      document.body.classList.add('modal-open');
-    }
+  function _syncModalState(){
+    const anyOpen = !!document.querySelector('.modal:not([hidden])');
+    document.body.classList.toggle('modal-open', anyOpen);
   }
-  function closeModal(id) {
-    const el = document.getElementById(id);
-    if (el) el.hidden = true;
-    // remove body flag only if no other modals are open
-    const anyOpen = Array.from(document.querySelectorAll('.modal')).some(m => !m.hidden);
-    if (!anyOpen) document.body.classList.remove('modal-open');
-  }
+
+  function openModal(id)  { const el = document.getElementById(id); if (el) { el.hidden = false; _syncModalState(); } }
+  function closeModal(id) { const el = document.getElementById(id); if (el) { el.hidden = true; _syncModalState(); } }
   document.addEventListener('click', e => { const c = e.target?.dataset?.close; if (c) closeModal(c); });
 
   function setSaveBtnState(btn, isSaved) {
@@ -143,21 +136,9 @@
             :`<a href="${esc(it.url||'#')}" style="font-size:11px;color:#aaa;white-space:nowrap;text-decoration:none;padding:3px 8px;border:1px solid #eee;border-radius:6px;">${esc((it.url||'#').replace('.html',''))}</a>`
           }
         `;
-        // Make the entire result row clickable (not just the word).
-        const go = () => {
-          if (isHere && onJump) { onJump(it); closeModal('globalSearchModal'); return; }
-          if (it.url) window.location.href = it.url;
-        };
-        row.addEventListener('click', (e) => {
-          const t = e.target;
-          if (t && (t.closest('button') || t.closest('a'))) return; // allow save button + link
-          go();
-        });
-        row.querySelector('.sr-word')?.addEventListener('click', (e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          go();
-        });
+        if (isHere && onJump) {
+          row.querySelector('.sr-word')?.addEventListener('click', () => { onJump(it); closeModal('globalSearchModal'); });
+        }
         cont.appendChild(row);
       });
     });
@@ -168,4 +149,24 @@
 
   window.SharedApp = { openModal, closeModal, getSaved, setSaved, getMeta, setMeta, setSaveBtnState, wireSaveButtons, initSavedModal, initSearchModal, registerPageItems };
   window.wireSaveButtons = wireSaveButtons;
+
+  // Ensure drawer is always treated as top-most overlay
+  document.addEventListener('DOMContentLoaded', () => {
+    const menuBtn = document.querySelector('.menu-btn');
+    const closeBtn = document.querySelector('.drawer-close');
+    const backdrop = document.querySelector('.drawer-backdrop');
+    const drawer = document.querySelector('.drawer');
+
+    const setOpen = (isOpen) => {
+      document.body.classList.toggle('drawer-open', !!isOpen);
+    };
+
+    menuBtn?.addEventListener('click', () => setOpen(true));
+    closeBtn?.addEventListener('click', () => setOpen(false));
+    backdrop?.addEventListener('click', () => setOpen(false));
+
+    // Safety: if drawer is hidden by other code, keep class in sync
+    const obs = drawer ? new MutationObserver(() => setOpen(!drawer.hidden)) : null;
+    obs?.observe(drawer, { attributes:true, attributeFilter:['hidden'] });
+  });
 })();
