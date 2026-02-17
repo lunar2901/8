@@ -1620,6 +1620,47 @@ body{
   color: #111 !important;
 }
 
+/* ==========================
+   FIXES: header + sticky rows
+   ========================== */
+
+/* Keep header actions pinned top-right on small screens */
+.main-header .header-content{ flex-wrap:nowrap; }
+.main-header .logo{ min-width:0; flex:1 1 auto; }
+.main-header .header-actions{ margin-left:auto; flex:0 0 auto; }
+.main-header .logo h1{ max-width: 60vw; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+
+@media (max-width: 480px){
+  .main-header .logo svg{ width:34px; height:34px; }
+  .main-header .logo h1{ font-size:14px; }
+  .header-actions{ gap:10px; }
+  .icon-btn{ padding:6px; }
+}
+
+/* Ensure sticky level row doesn't overlap modals */
+.level-section--sticky{ z-index:850; }
+
+/* iOS zoom fixes (any input/select that should not trigger zoom) */
+.answer-input, .select-input{ font-size:16px; }
+
+/* ==========================
+   FIXES: Practice layout
+   ========================== */
+
+@media (max-width: 900px){
+  .exercise-section{ grid-template-columns: 1fr; }
+}
+
+@media (max-width: 640px){
+  .practice-settings{ padding: 14px; }
+  .settings-row{ grid-template-columns: 1fr; gap: 12px; margin-bottom: 12px; }
+  .select-input{ padding: 10px 12px; }
+  .score-container{ flex-direction: row; flex-wrap: wrap; gap: 10px; }
+  .exercise-card{ padding: 16px; }
+  .action-buttons{ flex-direction: column; }
+  .action-buttons .btn{ width: 100%; justify-content: center; }
+}
+
 /* Reduce page vertical padding */
 .main-content{
   padding: 18px 0 !important;
@@ -1738,11 +1779,12 @@ body{
 }
 
 /* ===== Modals ===== */
-.modal{ position:fixed; inset:0; z-index:200; }
+/* Must sit above header + sticky level bar on mobile */
+.modal{ position:fixed; inset:0; z-index:1200; }
 .modal__backdrop{ position:absolute; inset:0; background:rgba(0,0,0,.35); }
 .modal__panel{
   position:relative;
-  margin: 8vh auto 0;
+  margin: 10vh auto 0;
   width:min(92vw, 720px);
   background:#fff;
   border:1px solid #e8e8e8;
@@ -1756,6 +1798,7 @@ body{
   padding:10px 12px;
   border:1px solid #e8e8e8;
   border-radius:0;
+  font-size:16px; /* prevent iOS zoom on focus */
 }
 .modal__results{ display:flex; flex-direction:column; gap:10px; max-height:60vh; overflow:auto; }
 .result{
@@ -1972,6 +2015,12 @@ body{
 .level-btn:hover .level-dropdown,
 .level-btn:focus-within .level-dropdown {
   display: block;
+}
+
+/* Touch devices: allow click-to-toggle dropdown */
+.level-btn.open .level-dropdown{ display:block; }
+@media (hover: none) {
+  .level-btn:hover .level-dropdown{ display:none; }
 }
 
 .level-dropdown-item {

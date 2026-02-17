@@ -166,14 +166,28 @@ initSearchModal((item) => {
   }
 });
 
+// Mobile-friendly: tap active level toggles its dropdown; tapping another level switches level
 levelBtns.forEach(btn => {
-  btn.addEventListener('click', () => {
+  btn.addEventListener('click', (e) => {
+    if (e.target?.closest?.('.level-dropdown-item')) return;
+    const isTouch = window.matchMedia?.('(hover: none)')?.matches;
+    if (isTouch && btn.classList.contains('active')) {
+      btn.classList.toggle('open');
+      levelBtns.forEach(b => { if (b !== btn) b.classList.remove('open'); });
+      return;
+    }
     levelBtns.forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     currentLevel = btn.dataset.level;
     renderCurrent();
     registerPageItems(buildPageItems(currentLevel));
+    levelBtns.forEach(b => b.classList.remove('open'));
+    if (isTouch) btn.classList.add('open');
   });
+});
+
+document.addEventListener('click', (e) => {
+  if (!e.target?.closest?.('.level-btn')) levelBtns.forEach(b => b.classList.remove('open'));
 });
 
 function renderCurrent() {
