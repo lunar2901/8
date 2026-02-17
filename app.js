@@ -135,6 +135,7 @@ function injectVerbCardStylesOnce() {
 /* ========================= Build page items for global search ========================= */
 
 function buildPageItems(level) {
+
   const list = verbsDB[level] || [];
   return list.map((v, i) => ({
     id: `verbs:${level}:${getVerbBase(v)}`,
@@ -154,7 +155,7 @@ updateCounts();
 buildAllDropdowns();
 
 // Register page items and init search for current level
-registerPageItems(buildPageItems(currentLevel));
+registerPageItems(buildAllPageItems());
 initSearchModal((item) => {
   if (item.level !== currentLevel) {
     // switch level first, then jump
@@ -168,34 +169,37 @@ initSearchModal((item) => {
 
 levelBtns.forEach(btn => {
   btn.addEventListener('click', (e) => {
-    // Mobile-friendly dropdown: tap to open list of words
-    const alreadyActive = btn.classList.contains('active');
+    // If tapping inside dropdown, let dropdown-item handler run
+    if (e.target && e.target.closest && e.target.closest('.level-dropdown')) return;
 
-    // Close other open dropdowns
+    const level = btn.dataset.level;
+    const isActive = btn.classList.contains('active');
+
+    // Close other dropdowns
     levelBtns.forEach(b => { if (b !== btn) b.classList.remove('open'); });
 
-    // If you tap the active level, just toggle its dropdown
-    if (alreadyActive) {
+    // On mobile: tap active level toggles dropdown open/close
+    if (isActive) {
       btn.classList.toggle('open');
       return;
     }
 
-    // Otherwise switch level and open the dropdown for quick browsing
+    // Switch level and open its list
     levelBtns.forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
-    btn.classList.add('open');
-    currentLevel = btn.dataset.level;
+    currentLevel = level;
     renderCurrent();
-    registerPageItems(buildPageItems(currentLevel));
+    btn.classList.add('open');
   });
 });
 
-// Close level dropdowns on outside tap/click
+// Close dropdown when tapping outside
 document.addEventListener('click', (e) => {
-  if (!e.target.closest('.level-btn')) {
+  if (!e.target.closest('.level-section')) {
     levelBtns.forEach(b => b.classList.remove('open'));
   }
 });
+
 
 function renderCurrent() {
   const rootId = 'verbs-list';

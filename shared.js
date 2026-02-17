@@ -1,4 +1,4 @@
-// shared.js — Cross-page save + search + modal helpers
+// shared.js — Cross-page save + search + modal helpers (v5)
 (function () {
   const SAVED_KEY  = 'savedWordsV1';
   const SAVED_META = 'savedWordsMetaV1';
@@ -13,11 +13,16 @@
 
   let _pageItems = [];
 
+  // Register items from the current page into the global search index
   function registerPageItems(items) {
-    _pageItems = items;
+    _pageItems = items || [];
     const idx = getIdx();
-    items.forEach(it => { idx[it.id] = it; });
+    (items || []).forEach(it => { idx[it.id] = it; });
     setIdx(idx);
+  }
+
+  function _anyModalOpen() {
+    return !!document.querySelector('.modal:not([hidden])');
   }
 
   function openModal(id)  {
@@ -26,13 +31,19 @@
     el.hidden = false;
     document.body.classList.add('modal-open');
   }
+
   function closeModal(id) {
     const el = document.getElementById(id);
-    if (el) el.hidden = true;
-    const anyOpen = Array.from(document.querySelectorAll('.modal')).some(m => !m.hidden);
-    if (!anyOpen) document.body.classList.remove('modal-open');
+    if (!el) return;
+    el.hidden = true;
+    if (!_anyModalOpen()) document.body.classList.remove('modal-open');
   }
-  document.addEventListener('click', e => { const c = e.target?.dataset?.close; if (c) closeModal(c); });
+
+  // Close modals via [data-close]
+  document.addEventListener('click', e => {
+    const c = e.target?.dataset?.close;
+    if (c) closeModal(c);
+  });
 
   function setSaveBtnState(btn, isSaved) {
     btn.textContent = isSaved ? '♥' : '♡';
@@ -46,10 +57,19 @@
       const fresh = btn.cloneNode(true);
       btn.replaceWith(fresh);
       setSaveBtnState(fresh, getSaved().has(id));
-      fresh.addEventListener('click', () => {
+      fresh.addEventListener('click', (e) => {
+        e.stopPropagation();
         const s = getSaved(); const m = getMeta();
         if (s.has(id)) { s.delete(id); delete m[id]; }
-        else { s.add(id); m[id] = { label: fresh.dataset.saveLabel||id, translation: fresh.dataset.saveTrans||'', url: fresh.dataset.saveUrl||window.location.pathname, category: fresh.dataset.saveCat||'' }; }
+        else {
+          s.add(id);
+          m[id] = {
+            label: fresh.dataset.saveLabel||id,
+            translation: fresh.dataset.saveTrans||'',
+            url: fresh.dataset.saveUrl||window.location.pathname,
+            category: fresh.dataset.saveCat||''
+          };
+        }
         setSaved(s); setMeta(m);
         setSaveBtnState(fresh, s.has(id));
       });
@@ -60,27 +80,39 @@
     const cont = document.getElementById('savedResults');
     if (!cont) return;
     const s = getSaved(); const m = getMeta();
-    if (!s.size) { cont.innerHTML = `<div class="result"><div style="color:#888;font-style:italic;">No saved words yet. Tap ♡ on any word to save it.</div></div>`; return; }
+    if (!s.size) {
+      cont.innerHTML = `<div class="result"><div style="color:#888;font-style:italic;">No saved words yet. Tap ♡ on any word to save it.</div></div>`;
+      return;
+    }
     cont.innerHTML = '';
     [...s].forEach(id => {
       const meta = m[id] || {};
       const row = document.createElement('div');
       row.className = 'result';
       row.innerHTML = `
-        <div>
+        <div style="flex:1;min-width:0;">
           <a href="${meta.url||'#'}" style="font-weight:600;color:#111;text-decoration:none;">${esc(meta.label||id)}</a>
           ${meta.translation?`<br><small style="color:#888;">${esc(meta.translation)}</small>`:''}
           ${meta.category?`<br><small style="color:#aaa;font-size:11px;text-transform:uppercase;letter-spacing:.06em;">${esc(meta.category)}</small>`:''}
         </div>
         <button class="save-btn saved" data-save-id="${esc(id)}" data-save-label="${esc(meta.label||id)}" data-save-trans="${esc(meta.translation||'')}" data-save-url="${esc(meta.url||'')}" data-save-cat="${esc(meta.category||'')}" aria-label="Remove">♥</button>
       `;
+      // Make whole row tappable
+      row.addEventListener('click', (e) => {
+        if (e.target.closest('button, a')) return;
+        const a = row.querySelector('a');
+        if (a && a.href) window.location.href = a.href;
+      });
       cont.appendChild(row);
     });
     wireSaveButtons();
   }
 
   function initSavedModal() {
-    document.getElementById('btnSaved')?.addEventListener('click', () => { openModal('savedModal'); renderSavedModal(); });
+    document.getElementById('btnSaved')?.addEventListener('click', () => {
+      openModal('savedModal');
+      renderSavedModal();
+    });
   }
 
   function initSearchModal(onJump) {
@@ -89,7 +121,9 @@
       const input = document.getElementById('globalSearchInput');
       const results = document.getElementById('globalSearchResults');
       if (!input || !results) return;
-      input.value = ''; input.focus();
+      input.value = '';
+      // iOS: avoid zoom by ensuring input font-size >= 16px via CSS; also focus after open
+      setTimeout(() => input.focus(), 0);
       _renderSearch(results, '', onJump);
       input.oninput = () => _renderSearch(results, input.value.trim().toLowerCase(), onJump);
     });
@@ -98,7 +132,19 @@
   function _renderSearch(cont, q, onJump) {
     const idx = getIdx();
     const all = Object.values(idx);
-    const filtered = q ? all.filter(it => (it.label||'').toLowerCase().includes(q) || (it.translation||'').toLowerCase().includes(q)) : all;
+
+    // If index is empty, still show helpful message
+    if (!all.length) {
+      cont.innerHTML = `<div class="result"><div style="color:#888;font-style:italic;">Search index is empty. Open the Verbs/Nouns/Adjectives/Adverbs pages once to build the index.</div></div>`;
+      return;
+    }
+
+    const filtered = q
+      ? all.filter(it =>
+          (it.label||'').toLowerCase().includes(q) ||
+          (it.translation||'').toLowerCase().includes(q)
+        )
+      : all;
 
     cont.innerHTML = '';
     if (!filtered.length) {
@@ -132,47 +178,51 @@
         row.className = 'result';
         row.innerHTML = `
           <div style="flex:1;min-width:0;">
-            <span class="sr-word" style="font-weight:600;cursor:${isHere?'pointer':'default'};">${esc(it.label)}</span>
-            ${it.level?`<span style="font-size:10px;color:#bbb;margin-left:5px;">${esc(it.level.toUpperCase())}</span>`:''}
-            ${it.translation?`<br><small style="color:#888;">${esc(it.translation)}</small>`:''}
+            <div class="sr-word" style="font-weight:600;">${esc(it.label)}</div>
+            ${it.level?`<div style="font-size:10px;color:#bbb;margin-top:2px;">${esc(it.level.toUpperCase())}</div>`:''}
+            ${it.translation?`<div style="color:#888;font-size:12px;margin-top:4px;">${esc(it.translation)}</div>`:''}
           </div>
           ${isHere
             ?`<button class="save-btn ${saved?'saved':''}" data-save-id="${esc(it.id)}" data-save-label="${esc(it.label)}" data-save-trans="${esc(it.translation||'')}" data-save-url="${esc(it.url||'')}" data-save-cat="${esc(it.category||'')}" aria-label="Save">${saved?'♥':'♡'}</button>`
-            :`<a href="${esc(it.url||'#')}" style="font-size:11px;color:#aaa;white-space:nowrap;text-decoration:none;padding:3px 8px;border:1px solid #eee;border-radius:6px;">${esc((it.url||'#').replace('.html',''))}</a>`
+            :`<a href="${esc(it.url||'#')}" style="font-size:11px;color:#aaa;white-space:nowrap;text-decoration:none;padding:3px 8px;border:1px solid #eee;border-radius:6px;">Open</a>`
           }
         `;
-        // Make the entire result row tappable/clickable (mobile friendly).
-        row.classList.add('result--clickable');
-        row.tabIndex = 0;
 
-        const go = () => {
-          if (isHere && onJump) {
+        // Whole row clickable:
+        row.addEventListener('click', (e) => {
+          if (e.target.closest('button, a')) return;
+          if (isHere && onJump) { onJump(it); closeModal('globalSearchModal'); return; }
+          if (it.url) window.location.href = it.url;
+        });
+
+        // Also support click on the word itself
+        if (isHere && onJump) {
+          row.querySelector('.sr-word')?.addEventListener('click', (e) => {
+            e.stopPropagation();
             onJump(it);
             closeModal('globalSearchModal');
-          } else if (it.url) {
-            window.location.href = it.url;
-          }
-        };
-
-        row.addEventListener('click', (ev) => {
-          // Don’t hijack clicks on the save button or the right-side link
-          if (ev.target.closest('.save-btn') || ev.target.closest('a')) return;
-          go();
-        });
-        row.addEventListener('keydown', (ev) => {
-          if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); go(); }
-        });
-
-        // Also allow tapping the word itself.
-        row.querySelector('.sr-word')?.addEventListener('click', (ev) => { ev.preventDefault(); go(); });
+          });
+        }
         cont.appendChild(row);
       });
     });
+
     wireSaveButtons();
   }
 
-  function esc(s) { return String(s??'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#039;'); }
+  function esc(s) {
+    return String(s??'')
+      .replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;')
+      .replaceAll('"','&quot;').replaceAll("'",'&#039;');
+  }
 
-  window.SharedApp = { openModal, closeModal, getSaved, setSaved, getMeta, setMeta, setSaveBtnState, wireSaveButtons, initSavedModal, initSearchModal, registerPageItems };
+  window.SharedApp = {
+    openModal, closeModal,
+    getSaved, setSaved,
+    getMeta, setMeta,
+    setSaveBtnState, wireSaveButtons,
+    initSavedModal, initSearchModal,
+    registerPageItems
+  };
   window.wireSaveButtons = wireSaveButtons;
 })();

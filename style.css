@@ -1738,7 +1738,7 @@ body{
 }
 
 /* ===== Modals ===== */
-.modal{ position:fixed; inset:0; z-index:1200; }
+.modal{ position:fixed; inset:0; z-index:200; }
 .modal__backdrop{ position:absolute; inset:0; background:rgba(0,0,0,.35); }
 .modal__panel{
   position:relative;
@@ -2197,22 +2197,37 @@ body{
 }
 
 
-/* When a modal is open, hide sticky level bar and prevent overlap */
-body.modal-open { overflow: hidden; }
-body.modal-open .level-section,
-body.modal-open .level-section--sticky { display: none !important; }
+/* === Patch v5: header alignment + modal overlay + touch dropdowns === */
+@media (max-width: 768px){
+  /* Keep header actions pinned right on small screens */
+  .header-content{ flex-wrap: nowrap !important; }
+  .logo{ min-width: 0; flex: 1 1 auto; }
+  .logo h1{ white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .header-actions{ flex: 0 0 auto; margin-left: auto; }
+}
 
-/* Make entire search result rows feel tappable */
-.result--clickable { cursor: pointer; }
-.result--clickable:active { transform: scale(0.99); }
+/* Hide sticky level bars when a modal is open (prevents overlap) */
+body.modal-open .level-section--sticky{ visibility: hidden; }
 
-/* Practice page: tighter top spacing and inline filters on mobile */
-.practice-page.main-content { padding-top: var(--spacing-lg); }
-.practice-settings .settings-row { display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap; }
-.practice-settings .setting-group { flex:1 1 170px; min-width: 150px; }
-@media (max-width: 560px){
-  .practice-settings .settings-row { gap:10px; }
-  .practice-settings .setting-group { flex:1 1 calc(50% - 6px); min-width: 0; }
-  .practice-settings label { font-size: 12px; }
-  .practice-settings .select-input { padding: 10px 10px; }
+/* Ensure modals are always above sticky header/levels */
+.modal{ z-index: 1300; }
+.modal__backdrop{ z-index: 1300; }
+.modal__panel{ z-index: 1301; }
+
+/* Level dropdown: hover on desktop + open class on touch */
+.level-btn:hover .level-dropdown{ display:block; }
+.level-btn.open .level-dropdown{ display:block; }
+
+
+/* Practice: keep score + streak on one row on mobile */
+@media (max-width: 768px){
+  .score-container{
+    display:flex;
+    flex-direction:row;
+    justify-content:space-between;
+    gap:12px;
+    flex-wrap:nowrap;
+  }
+  .score-item{ flex:1 1 0; }
+  .score-item.streak-item{ justify-content:flex-end; }
 }
