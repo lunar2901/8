@@ -20,8 +20,18 @@
     setIdx(idx);
   }
 
-  function openModal(id)  { const el = document.getElementById(id); if (el) el.hidden = false; }
-  function closeModal(id) { const el = document.getElementById(id); if (el) el.hidden = true; }
+  function openModal(id)  {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.hidden = false;
+    document.body.classList.add('modal-open');
+  }
+  function closeModal(id) {
+    const el = document.getElementById(id);
+    if (el) el.hidden = true;
+    const anyOpen = Array.from(document.querySelectorAll('.modal')).some(m => !m.hidden);
+    if (!anyOpen) document.body.classList.remove('modal-open');
+  }
   document.addEventListener('click', e => { const c = e.target?.dataset?.close; if (c) closeModal(c); });
 
   function setSaveBtnState(btn, isSaved) {
@@ -131,9 +141,30 @@
             :`<a href="${esc(it.url||'#')}" style="font-size:11px;color:#aaa;white-space:nowrap;text-decoration:none;padding:3px 8px;border:1px solid #eee;border-radius:6px;">${esc((it.url||'#').replace('.html',''))}</a>`
           }
         `;
-        if (isHere && onJump) {
-          row.querySelector('.sr-word')?.addEventListener('click', () => { onJump(it); closeModal('globalSearchModal'); });
-        }
+        // Make the entire result row tappable/clickable (mobile friendly).
+        row.classList.add('result--clickable');
+        row.tabIndex = 0;
+
+        const go = () => {
+          if (isHere && onJump) {
+            onJump(it);
+            closeModal('globalSearchModal');
+          } else if (it.url) {
+            window.location.href = it.url;
+          }
+        };
+
+        row.addEventListener('click', (ev) => {
+          // Don’t hijack clicks on the save button or the right-side link
+          if (ev.target.closest('.save-btn') || ev.target.closest('a')) return;
+          go();
+        });
+        row.addEventListener('keydown', (ev) => {
+          if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); go(); }
+        });
+
+        // Also allow tapping the word itself.
+        row.querySelector('.sr-word')?.addEventListener('click', (ev) => { ev.preventDefault(); go(); });
         cont.appendChild(row);
       });
     });
@@ -144,21 +175,4 @@
 
   window.SharedApp = { openModal, closeModal, getSaved, setSaved, getMeta, setMeta, setSaveBtnState, wireSaveButtons, initSavedModal, initSearchModal, registerPageItems };
   window.wireSaveButtons = wireSaveButtons;
-
-  // Sticky level section: compact on scroll (helps on mobile)
-  (function(){
-    let last = null;
-    function toggle(){
-      const compact = window.scrollY > 40;
-      if (compact === last) return;
-      last = compact;
-      document.querySelectorAll('.level-section--sticky').forEach(el=>{
-        el.classList.toggle('is-compact', compact);
-      });
-    }
-    window.addEventListener('scroll', toggle, {passive:true});
-    window.addEventListener('resize', toggle, {passive:true});
-    toggle();
-  })();
-
 })();

@@ -1738,7 +1738,7 @@ body{
 }
 
 /* ===== Modals ===== */
-.modal{ position:fixed; inset:0; z-index:200; }
+.modal{ position:fixed; inset:0; z-index:1200; }
 .modal__backdrop{ position:absolute; inset:0; background:rgba(0,0,0,.35); }
 .modal__panel{
   position:relative;
@@ -1972,10 +1972,6 @@ body{
 .level-btn:hover .level-dropdown,
 .level-btn:focus-within .level-dropdown {
   display: block;
-
-.level-btn.open .level-dropdown {
-  display: block;
-}
 }
 
 .level-dropdown-item {
@@ -2201,93 +2197,22 @@ body{
 }
 
 
-/* ===== Grammar filters (Topics/Tags) ===== */
-.grammar-filters{
-  display:flex;
-  gap:10px;
-  align-items:center;
-  margin-left:auto;
-  position:relative;
-  white-space:nowrap;
-}
-.gf-item{ position:relative; }
-.gf-btn{
-  display:inline-flex;
-  align-items:center;
-  gap:8px;
-  padding:10px 14px;
-  border:1px solid rgba(0,0,0,.12);
-  background:#fff;
-  border-radius:999px;
-  font-weight:600;
-  color:var(--primary-color);
-}
-.gf-btn .gf-arrow{ font-size:.85em; opacity:.7; }
-.gf-btn.active-filter{
-  border-color: var(--primary-color);
-  box-shadow:0 0 0 3px rgba(59,130,246,.12);
-}
-.gf-dropdown{
-  display:none;
-  position:absolute;
-  top: calc(100% + 8px);
-  right: 0;
-  min-width: 220px;
-  max-height: 320px;
-  overflow:auto;
-  background:#fff;
-  border:1px solid rgba(0,0,0,.12);
-  border-radius:12px;
-  box-shadow:0 10px 30px rgba(0,0,0,.18);
-  padding:6px 0;
-  z-index: 1200;
-}
-.gf-item.open .gf-dropdown{ display:block; }
-.gf-option{
-  display:flex;
-  justify-content:space-between;
-  gap:12px;
-  width:100%;
-  padding:9px 14px;
-  background:transparent;
-  border:0;
-  text-align:left;
-  font:inherit;
-}
-.gf-option:hover{ background: rgba(0,0,0,.04); }
-.gf-option.selected{ background: rgba(59,130,246,.10); }
-.gf-count{ opacity:.65; }
+/* When a modal is open, hide sticky level bar and prevent overlap */
+body.modal-open { overflow: hidden; }
+body.modal-open .level-section,
+body.modal-open .level-section--sticky { display: none !important; }
 
-/* ===== Grammar top bar: levels + filters in one row ===== */
-#grammarTopBar{
-  display:flex;
-  align-items:center;
-  gap:12px;
-}
-#grammarTopBar .level-buttons{
-  display:flex;
-  flex:1;
-  gap:10px;
-  overflow-x:auto;
-  -webkit-overflow-scrolling: touch;
-  padding:0 10px;
-}
-#grammarTopBar .level-buttons::-webkit-scrollbar{ display:none; }
+/* Make entire search result rows feel tappable */
+.result--clickable { cursor: pointer; }
+.result--clickable:active { transform: scale(0.99); }
 
-/* ===== Compact sticky level bar on scroll ===== */
-.level-section--sticky.is-compact{
-  padding: 6px 0 !important;
-}
-.level-section--sticky.is-compact .level-btn{
-  padding: 10px 12px !important;
-  gap: 4px !important;
-}
-.level-section--sticky.is-compact .level-badge{ font-size: 1.1rem; }
-.level-section--sticky.is-compact .level-name{ display:none; }
-.level-section--sticky.is-compact .level-count{ font-size: .8rem; }
-
-@media (max-width: 520px){
-  #grammarTopBar{ gap:8px; }
-  .gf-btn{ padding:8px 12px; }
-  .gf-dropdown{ right: -6px; }
+/* Practice page: tighter top spacing and inline filters on mobile */
+.practice-page.main-content { padding-top: var(--spacing-lg); }
+.practice-settings .settings-row { display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap; }
+.practice-settings .setting-group { flex:1 1 170px; min-width: 150px; }
+@media (max-width: 560px){
+  .practice-settings .settings-row { gap:10px; }
+  .practice-settings .setting-group { flex:1 1 calc(50% - 6px); min-width: 0; }
+  .practice-settings label { font-size: 12px; }
+  .practice-settings .select-input { padding: 10px 10px; }
 }
