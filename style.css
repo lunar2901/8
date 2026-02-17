@@ -56,9 +56,6 @@
   --transition-fast: 150ms ease;
   --transition-base: 250ms ease;
   --transition-slow: 350ms ease;
-
-  /* Layout */
-  --header-height: 72px;
 }
 
 * {
@@ -1196,27 +1193,8 @@ body {
   .nav-toggle { display: inline-flex; }
 
   .header-content {
-    /* Keep header actions pinned top-right on mobile */
-    flex-wrap: nowrap;
+    flex-wrap: wrap;
     align-items: center;
-  }
-
-  .logo {
-    flex: 1;
-    min-width: 0;
-  }
-
-  .logo h1 {
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  .header-actions {
-    margin-left: auto;
-    flex-shrink: 0;
-    display: flex;
-    gap: var(--spacing-sm);
   }
 
   /* Hide tabs by default on mobile */
@@ -1258,25 +1236,12 @@ body {
   }
   
   .settings-row {
-    /* Keep Level + Exercise Type on one row on mobile */
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: var(--spacing-md);
+    grid-template-columns: 1fr;
   }
   
   .score-container {
-    /* Keep Score + Streak on one line (wrap only if truly needed) */
-    flex-direction: row;
-    flex-wrap: wrap;
-    justify-content: space-between;
-    align-items: center;
-    gap: var(--spacing-md);
-  }
-}
-
-@media (max-width: 420px) {
-  /* Very small devices: allow filters to stack if they can't fit */
-  .settings-row {
-    grid-template-columns: 1fr;
+    flex-direction: column;
+    align-items: flex-start;
   }
 }
 
@@ -1297,21 +1262,6 @@ body {
   .tips-section {
     padding: var(--spacing-md);
   }
-}
-
-/* Practice page: reduce empty space above settings */
-.practice-page .practice-header {
-  display: none;
-}
-
-/* Practice page: prevent select overflow in narrow layouts */
-.practice-page .setting-group,
-.practice-page .select-input {
-  min-width: 0;
-}
-
-.practice-page .select-input {
-  width: 100%;
 }
 
 /* === Utility Classes === */
@@ -2246,68 +2196,65 @@ body{
   cursor: pointer !important;
 }
 
-/* ==========================================================
-   Patch v8: header pinning, modal stacking, sticky bar UI,
-             practice compact row, grammar filters alignment
-   ========================================================== */
 
-/* Header icons pinned right on mobile (no wrapping) */
-@media (max-width: 768px){
-  .header-content{ flex-wrap: nowrap !important; }
-  .logo h1{ max-width: 60vw; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-  .header-actions{ margin-left:auto; flex:0 0 auto; }
+/* ===== Patch v9: Drawer on top + Practice compact ===== */
+
+/* Drawer should visually dominate when open */
+.drawer-backdrop{ z-index:6000 !important; background:rgba(0,0,0,.45) !important; }
+.drawer{ z-index:6001 !important; }
+
+/* Hide sticky level bar (and grammar top bar) when drawer is open */
+body.drawer-open .level-section--sticky,
+body.drawer-open #grammarTopBar{
+  visibility:hidden !important;
 }
 
-/* Sticky level bar below header + opaque */
+/* Modals above everything else except drawer */
+.modal{ z-index:5000 !important; }
+
+/* Make sticky level area more opaque/less distracting (all pages) */
 .level-section--sticky{
-  top: var(--header-height) !important;
-  z-index: 2000;
-  background: rgba(255,255,255,0.82);
-  backdrop-filter: saturate(180%) blur(8px);
-  -webkit-backdrop-filter: saturate(180%) blur(8px);
+  background: rgba(255,255,255,.92) !important;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
 }
 body.is-compact .level-section--sticky{
-  background: rgba(255,255,255,0.95);
-  box-shadow: 0 6px 18px rgba(0,0,0,0.08);
-}
-body.is-compact .level-btn{ padding: 6px 10px; }
-body.is-compact .level-name{ display:none !important; }
-
-/* Modals above header + levels on ALL pages */
-.modal{ z-index: 10000 !important; }
-.modal__panel{ margin-top: env(safe-area-inset-top); }
-body.modal-open{ overflow:hidden; }
-body.modal-open .level-section--sticky{ display:none !important; }
-
-/* Grammar: Topics/Tags on same row as levels */
-#grammarTopBar{ display:flex; align-items:center; gap:10px; }
-#grammarTopBar .level-buttons{
-  flex: 1 1 auto;
-  overflow-x:auto;
-  -webkit-overflow-scrolling: touch;
-  white-space: nowrap;
-}
-#grammarTopBar .grammar-filters{
-  flex: 0 0 auto;
-  display:flex;
-  gap:8px;
-  overflow: visible !important;
+  background: rgba(255,255,255,.97) !important;
 }
 
-/* Practice: Level + Exercise Type on one line (mobile), score/streak one line */
-.practice-header{ display:none !important; }
-@media (max-width: 768px){
-  .practice-page .settings-row{
-    display:grid !important;
-    grid-template-columns: repeat(2, minmax(0,1fr)) !important;
-    gap: 12px !important;
+/* Practice page: compact controls so "Check Answer" is visible without scrolling */
+@media (max-width: 600px){
+  .practice-settings{
+    padding: 12px !important;
+    margin-bottom: 12px !important;
+    border-radius: 14px !important;
   }
-  .practice-page .setting-group{ min-width:0; }
-  .practice-page .select-input{ width:100%; min-width:0; }
-  .practice-page .score-container{
-    display:flex !important;
+  .settings-row{
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 10px !important;
+    margin-bottom: 10px !important;
+  }
+  .setting-group label{
+    font-size: 0.85rem !important;
+    margin-bottom: 2px !important;
+  }
+  .select-input{
+    padding: 10px 12px !important;
+    border-width: 1px !important;
+    border-radius: 12px !important;
+    font-size: 16px !important; /* prevent iOS zoom */
+    min-width: 0 !important;
+    width: 100% !important;
+  }
+  .score-container{
+    padding: 10px 12px !important;
+    gap: 18px !important;
     justify-content: space-between !important;
-    gap: 12px !important;
-    flex-wrap: nowrap !important;
   }
+  .score-value{ font-size: 1.1rem !important; }
+}
+
+/* Slightly tighten practice exercise card on mobile */
+@media (max-width: 600px){
+  .exercise-card{ padding: 18px !important; }
 }

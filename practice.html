@@ -71,7 +71,12 @@
 
   <main class="main-content practice-page">
     <div class="container">
-<section class="practice-settings">
+      <section class="practice-header" style="margin-bottom:16px;">
+        <h2 style="font-size:1.4rem;font-weight:700;">Practice Mode</h2>
+        <p style="color:#555;font-size:.9rem;">Test your knowledge with interactive exercises</p>
+      </section>
+
+      <section class="practice-settings">
         <div class="settings-row">
           <div class="setting-group">
             <label for="practice-level">Level:</label>
@@ -157,8 +162,8 @@
   <script src="shared.js"></script>
   <script>
     const menuBtn=document.querySelector(".menu-btn"),drawer=document.querySelector(".drawer"),backdrop=document.querySelector(".drawer-backdrop"),closeBtn=document.querySelector(".drawer-close");
-    function openMenu(){drawer.hidden=false;backdrop.hidden=false;menuBtn?.setAttribute("aria-expanded","true");}
-    function closeMenu(){drawer.hidden=true;backdrop.hidden=true;menuBtn?.setAttribute("aria-expanded","false");}
+    function openMenu(){drawer.hidden=false;backdrop.hidden=false;menuBtn?.setAttribute("aria-expanded","true");document.body.classList.add('drawer-open');}
+    function closeMenu(){drawer.hidden=true;backdrop.hidden=true;menuBtn?.setAttribute("aria-expanded","false");document.body.classList.remove('drawer-open');}
     menuBtn?.addEventListener("click",openMenu);closeBtn?.addEventListener("click",closeMenu);backdrop?.addEventListener("click",closeMenu);
     SharedApp.initSavedModal();
     SharedApp.initSearchModal();
