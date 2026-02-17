@@ -1620,47 +1620,6 @@ body{
   color: #111 !important;
 }
 
-/* ==========================
-   FIXES: header + sticky rows
-   ========================== */
-
-/* Keep header actions pinned top-right on small screens */
-.main-header .header-content{ flex-wrap:nowrap; }
-.main-header .logo{ min-width:0; flex:1 1 auto; }
-.main-header .header-actions{ margin-left:auto; flex:0 0 auto; }
-.main-header .logo h1{ max-width: 60vw; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-
-@media (max-width: 480px){
-  .main-header .logo svg{ width:34px; height:34px; }
-  .main-header .logo h1{ font-size:14px; }
-  .header-actions{ gap:10px; }
-  .icon-btn{ padding:6px; }
-}
-
-/* Ensure sticky level row doesn't overlap modals */
-.level-section--sticky{ z-index:850; }
-
-/* iOS zoom fixes (any input/select that should not trigger zoom) */
-.answer-input, .select-input{ font-size:16px; }
-
-/* ==========================
-   FIXES: Practice layout
-   ========================== */
-
-@media (max-width: 900px){
-  .exercise-section{ grid-template-columns: 1fr; }
-}
-
-@media (max-width: 640px){
-  .practice-settings{ padding: 14px; }
-  .settings-row{ grid-template-columns: 1fr; gap: 12px; margin-bottom: 12px; }
-  .select-input{ padding: 10px 12px; }
-  .score-container{ flex-direction: row; flex-wrap: wrap; gap: 10px; }
-  .exercise-card{ padding: 16px; }
-  .action-buttons{ flex-direction: column; }
-  .action-buttons .btn{ width: 100%; justify-content: center; }
-}
-
 /* Reduce page vertical padding */
 .main-content{
   padding: 18px 0 !important;
@@ -1779,12 +1738,11 @@ body{
 }
 
 /* ===== Modals ===== */
-/* Must sit above header + sticky level bar on mobile */
-.modal{ position:fixed; inset:0; z-index:1200; }
+.modal{ position:fixed; inset:0; z-index:200; }
 .modal__backdrop{ position:absolute; inset:0; background:rgba(0,0,0,.35); }
 .modal__panel{
   position:relative;
-  margin: 10vh auto 0;
+  margin: 8vh auto 0;
   width:min(92vw, 720px);
   background:#fff;
   border:1px solid #e8e8e8;
@@ -1798,7 +1756,6 @@ body{
   padding:10px 12px;
   border:1px solid #e8e8e8;
   border-radius:0;
-  font-size:16px; /* prevent iOS zoom on focus */
 }
 .modal__results{ display:flex; flex-direction:column; gap:10px; max-height:60vh; overflow:auto; }
 .result{
@@ -2015,12 +1972,10 @@ body{
 .level-btn:hover .level-dropdown,
 .level-btn:focus-within .level-dropdown {
   display: block;
-}
 
-/* Touch devices: allow click-to-toggle dropdown */
-.level-btn.open .level-dropdown{ display:block; }
-@media (hover: none) {
-  .level-btn:hover .level-dropdown{ display:none; }
+.level-btn.open .level-dropdown {
+  display: block;
+}
 }
 
 .level-dropdown-item {
@@ -2243,4 +2198,96 @@ body{
   color: #111;
   pointer-events: auto !important;
   cursor: pointer !important;
+}
+
+
+/* ===== Grammar filters (Topics/Tags) ===== */
+.grammar-filters{
+  display:flex;
+  gap:10px;
+  align-items:center;
+  margin-left:auto;
+  position:relative;
+  white-space:nowrap;
+}
+.gf-item{ position:relative; }
+.gf-btn{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  padding:10px 14px;
+  border:1px solid rgba(0,0,0,.12);
+  background:#fff;
+  border-radius:999px;
+  font-weight:600;
+  color:var(--primary-color);
+}
+.gf-btn .gf-arrow{ font-size:.85em; opacity:.7; }
+.gf-btn.active-filter{
+  border-color: var(--primary-color);
+  box-shadow:0 0 0 3px rgba(59,130,246,.12);
+}
+.gf-dropdown{
+  display:none;
+  position:absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  min-width: 220px;
+  max-height: 320px;
+  overflow:auto;
+  background:#fff;
+  border:1px solid rgba(0,0,0,.12);
+  border-radius:12px;
+  box-shadow:0 10px 30px rgba(0,0,0,.18);
+  padding:6px 0;
+  z-index: 1200;
+}
+.gf-item.open .gf-dropdown{ display:block; }
+.gf-option{
+  display:flex;
+  justify-content:space-between;
+  gap:12px;
+  width:100%;
+  padding:9px 14px;
+  background:transparent;
+  border:0;
+  text-align:left;
+  font:inherit;
+}
+.gf-option:hover{ background: rgba(0,0,0,.04); }
+.gf-option.selected{ background: rgba(59,130,246,.10); }
+.gf-count{ opacity:.65; }
+
+/* ===== Grammar top bar: levels + filters in one row ===== */
+#grammarTopBar{
+  display:flex;
+  align-items:center;
+  gap:12px;
+}
+#grammarTopBar .level-buttons{
+  display:flex;
+  flex:1;
+  gap:10px;
+  overflow-x:auto;
+  -webkit-overflow-scrolling: touch;
+  padding:0 10px;
+}
+#grammarTopBar .level-buttons::-webkit-scrollbar{ display:none; }
+
+/* ===== Compact sticky level bar on scroll ===== */
+.level-section--sticky.is-compact{
+  padding: 6px 0 !important;
+}
+.level-section--sticky.is-compact .level-btn{
+  padding: 10px 12px !important;
+  gap: 4px !important;
+}
+.level-section--sticky.is-compact .level-badge{ font-size: 1.1rem; }
+.level-section--sticky.is-compact .level-name{ display:none; }
+.level-section--sticky.is-compact .level-count{ font-size: .8rem; }
+
+@media (max-width: 520px){
+  #grammarTopBar{ gap:8px; }
+  .gf-btn{ padding:8px 12px; }
+  .gf-dropdown{ right: -6px; }
 }

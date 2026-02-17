@@ -144,4 +144,21 @@
 
   window.SharedApp = { openModal, closeModal, getSaved, setSaved, getMeta, setMeta, setSaveBtnState, wireSaveButtons, initSavedModal, initSearchModal, registerPageItems };
   window.wireSaveButtons = wireSaveButtons;
+
+  // Sticky level section: compact on scroll (helps on mobile)
+  (function(){
+    let last = null;
+    function toggle(){
+      const compact = window.scrollY > 40;
+      if (compact === last) return;
+      last = compact;
+      document.querySelectorAll('.level-section--sticky').forEach(el=>{
+        el.classList.toggle('is-compact', compact);
+      });
+    }
+    window.addEventListener('scroll', toggle, {passive:true});
+    window.addEventListener('resize', toggle, {passive:true});
+    toggle();
+  })();
+
 })();

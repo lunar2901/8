@@ -166,28 +166,35 @@ initSearchModal((item) => {
   }
 });
 
-// Mobile-friendly: tap active level toggles its dropdown; tapping another level switches level
 levelBtns.forEach(btn => {
   btn.addEventListener('click', (e) => {
-    if (e.target?.closest?.('.level-dropdown-item')) return;
-    const isTouch = window.matchMedia?.('(hover: none)')?.matches;
-    if (isTouch && btn.classList.contains('active')) {
+    // Mobile-friendly dropdown: tap to open list of words
+    const alreadyActive = btn.classList.contains('active');
+
+    // Close other open dropdowns
+    levelBtns.forEach(b => { if (b !== btn) b.classList.remove('open'); });
+
+    // If you tap the active level, just toggle its dropdown
+    if (alreadyActive) {
       btn.classList.toggle('open');
-      levelBtns.forEach(b => { if (b !== btn) b.classList.remove('open'); });
       return;
     }
+
+    // Otherwise switch level and open the dropdown for quick browsing
     levelBtns.forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
+    btn.classList.add('open');
     currentLevel = btn.dataset.level;
     renderCurrent();
     registerPageItems(buildPageItems(currentLevel));
-    levelBtns.forEach(b => b.classList.remove('open'));
-    if (isTouch) btn.classList.add('open');
   });
 });
 
+// Close level dropdowns on outside tap/click
 document.addEventListener('click', (e) => {
-  if (!e.target?.closest?.('.level-btn')) levelBtns.forEach(b => b.classList.remove('open'));
+  if (!e.target.closest('.level-btn')) {
+    levelBtns.forEach(b => b.classList.remove('open'));
+  }
 });
 
 function renderCurrent() {
